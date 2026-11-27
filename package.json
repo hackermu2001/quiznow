@@ -1,0 +1,11 @@
+{
+  "name": "quiznow",
+  "version": "1.0.0",
+  "description": "QuizNow - Real-time interactive multiplayer quiz platform like Kahoot",
+  "scripts": {
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "build": "npm --prefix client run build",
+    "start": "npm --prefix server run start"
+  }
+}
