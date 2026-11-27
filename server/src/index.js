@@ -11,6 +11,19 @@ import reportRoutes from './routes/reports.js';
 import { GameManager } from './game/GameManager.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Auto-load .env if present (Node 22+)
+for (const envPath of [
+  path.join(__dirname, '..', '.env'),
+  path.join(__dirname, '..', '..', '.env'),
+]) {
+  if (fs.existsSync(envPath) && typeof process.loadEnvFile === 'function') {
+    try {
+      process.loadEnvFile(envPath);
+    } catch {}
+  }
+}
+
 const PORT = process.env.PORT || 3001;
 
 const app = express();

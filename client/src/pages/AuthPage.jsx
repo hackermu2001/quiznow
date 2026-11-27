@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
+import { apiFetch } from '../utils/api';
 
 const AVATARS = ['🦊', '🦁', '🐼', '🐸', '🦉', '🦄', '🚀', '⚡', '🤖', '🐙', '🐯', '🌟'];
 
@@ -14,9 +15,72 @@ export default function AuthPage() {
   const [avatar, setAvatar] = useState('🦊');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [googleClientId, setGoogleClientId] = useState('');
 
-  const { login, register } = useAuth();
+  const googleBtnRef = useRef(null);
+  const { login, register, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    apiFetch('/api/auth/config')
+      .then((data) => setGoogleClientId(data.googleClientId || ''))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (!googleClientId || !googleBtnRef.current) return;
+
+    let cancelled = false;
+
+    const initGoogleButton = () => {
+      if (cancelled || !window.google?.accounts?.id || !googleBtnRef.current) return;
+      window.google.accounts.id.initialize({
+        client_id: googleClientId,
+        callback: async (response) => {
+          if (!response?.credential) return;
+          setError('');
+          setSubmitting(true);
+          try {
+            await loginWithGoogle(response.credential);
+            navigate('/discover');
+          } catch (err) {
+            setError(err.message);
+          } finally {
+            setSubmitting(false);
+          }
+        },
+      });
+      googleBtnRef.current.innerHTML = '';
+      window.google.accounts.id.renderButton(googleBtnRef.current, {
+        theme: 'outline',
+        size: 'large',
+        width: 360,
+        text: mode === 'register' ? 'signup_with' : 'signin_with',
+        shape: 'rectangular',
+        locale: 'id',
+      });
+    };
+
+    if (window.google?.accounts?.id) {
+      initGoogleButton();
+    } else {
+      const existingScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+      if (existingScript) {
+        existingScript.addEventListener('load', initGoogleButton);
+      } else {
+        const script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.defer = true;
+        script.onload = initGoogleButton;
+        document.head.appendChild(script);
+      }
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [googleClientId, mode, loginWithGoogle, navigate]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -95,6 +159,21 @@ export default function AuthPage() {
           {error && (
             <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-semibold">
               {error}
+            </div>
+          )}
+
+          {/* Google Sign-In / Sign-Up */}
+          {googleClientId && (
+            <div className="mb-5">
+              <div ref={googleBtnRef} className="flex justify-center min-h-[44px]" />
+              <div className="relative my-5">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-200" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-3 text-slate-400 font-bold">atau dengan email</span>
+                </div>
+              </div>
             </div>
           )}
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Play, Search, Edit3, Copy, Trash2, Plus, HelpCircle, Users } from 'lucide-react';
 import Navbar from '../components/Navbar';
+import UserAvatar from '../components/UserAvatar';
 import { apiFetch } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -201,7 +202,7 @@ export default function DiscoverPage() {
                       </p>
                       <div className="flex items-center justify-between mt-3 text-xs text-slate-500 font-semibold">
                         <span className="flex items-center gap-1.5">
-                          <span className="text-base">{qz.author_avatar}</span>
+                          <UserAvatar avatar={qz.author_avatar} size="sm" />
                           {qz.author_name}
                         </span>
                         <span className="flex items-center gap-1">

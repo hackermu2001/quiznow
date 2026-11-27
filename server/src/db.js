@@ -21,6 +21,7 @@ db.exec(`
     email TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     avatar TEXT NOT NULL DEFAULT '🦊',
+    google_id TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
@@ -71,6 +72,14 @@ export function hashPasswordSync(password) {
   const derived = crypto.scryptSync(password, salt, 64).toString('hex');
   return `${salt}:${derived}`;
 }
+
+// Safe migration for existing databases without google_id column
+try {
+  db.exec('ALTER TABLE users ADD COLUMN google_id TEXT;');
+} catch {
+  // Column already exists
+}
+db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id) WHERE google_id IS NOT NULL;');
 
 function seedDatabase() {
   const existingUsers = db.prepare('SELECT COUNT(*) as count FROM users').get();

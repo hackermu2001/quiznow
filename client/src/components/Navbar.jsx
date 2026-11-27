@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Compass, PlusCircle, BarChart3, LogOut, Gamepad2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import UserAvatar from './UserAvatar';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -66,7 +67,7 @@ export default function Navbar() {
           {user ? (
             <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
               <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-100">
-                <span className="text-lg leading-none">{user.avatar}</span>
+                <UserAvatar avatar={user.avatar} size="md" />
                 <span className="text-sm font-bold text-slate-800 hidden sm:inline">
                   {user.username}
                 </span>

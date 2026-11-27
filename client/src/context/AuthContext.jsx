@@ -39,13 +39,23 @@ export function AuthProvider({ children }) {
     return data.user;
   }
 
+  async function loginWithGoogle(credential) {
+    const data = await apiFetch('/api/auth/google', {
+      method: 'POST',
+      body: JSON.stringify({ credential }),
+    });
+    setStoredToken(data.token);
+    setUser(data.user);
+    return data.user;
+  }
+
   function logout() {
     setStoredToken(null);
     setUser(null);
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, loginWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );
